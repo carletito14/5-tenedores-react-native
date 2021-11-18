@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Text } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import { ListItem } from 'react-native-elements'
 import { map } from "lodash"
 import { Modal } from '../Modal'
 import ChangeDisplayNameForm from './ChangeDisplayNameForm'
+import ChangeEmailForm from './ChangeEmailForm'
+import { ChangePasswordForm } from './ChangePasswordForm'
 
-const AccountOptions = ({ userInfo, toastRef }) => {
+const AccountOptions = ({ userInfo, toastRef, setReloadUserInfo }) => {
 
     const [showModal, setShowModal] = useState(false)
     const [renderComponent, setRenderComponent] = useState(null)
@@ -13,21 +15,36 @@ const AccountOptions = ({ userInfo, toastRef }) => {
     const selectedComponent = (key) => {
         switch (key) {
             case "displayName":
-                setRenderComponent(<ChangeDisplayNameForm
-                    displayName={userInfo.displayName}
-                    setShowModal={setShowModal}
-                    toastRef={toastRef}
-                />)
+                setRenderComponent(
+                    <ChangeDisplayNameForm
+                        displayName={userInfo.displayName}
+                        setShowModal={setShowModal}
+                        toastRef={toastRef}
+                        setReloadUserInfo={setReloadUserInfo}
+                    />)
                 setShowModal(true)
                 break;
 
             case "email":
-                setRenderComponent(<Text>Cambiando Email</Text>)
+                setRenderComponent(
+                    <ChangeEmailForm
+                        email={userInfo.email}
+                        setShowModal={setShowModal}
+                        toastRef={toastRef}
+                        setReloadUserInfo={setReloadUserInfo}
+                    />
+
+                )
                 setShowModal(true)
                 break;
 
             case "password":
-                setRenderComponent(<Text>Cambiando Contraseña</Text>)
+                setRenderComponent(
+                    <ChangePasswordForm
+                        setShowModal={setShowModal}
+                        toastRef={toastRef}
+                    />
+                )
                 setShowModal(true)
                 break;
 
