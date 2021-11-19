@@ -6,12 +6,14 @@ import MapView from 'react-native-maps'
 import * as Permissions from "expo-permissions"
 import * as ImagePicker from "expo-image-picker"
 import { firebaseApp } from '../../utils/firebase';
-import firebase from 'firebase'
+import firebase from 'firebase/app'
 import "firebase/storage"
+import "firebase/firestore"
 import { map, size, filter } from "lodash"
 import uuid from "random-uuid-v4"
 import { Modal } from '../Modal';
 
+const db = firebase.firestore(firebaseApp)
 const widthScreen = Dimensions.get("window").width; // nos pone un 100% de lo que queramos (para imagenes es util)
 
 
@@ -37,8 +39,34 @@ export const AddRestaurantForm = ({ toastRef, setIsLoading, navigation }) => {
             // console.log('okey');
             uploadImageStorage().then(response => {
                 // console.log(response);
-                setIsLoading(false)
-                toastRef.current.show("Restaurante creado correctamente", 6000)
+                // si no hay colección se va a crear con el nombre que le demos automáticamente
+                db.collection("restaurants")
+                    .add({
+                        name: restaurantName,
+                        address: restaurantAdress,
+                        description: restaurantDescription,
+                        location: locationRestaurant,
+                        images: response,
+                        rating: 0,
+                        ratingTotal: 0,
+                        quantityVoting: 0,
+                        createAt: new Date(),
+                        createBy: firebase.auth().currentUser.uid
+                    })
+                    .then(() => {
+                        setIsLoading(false)
+                        toastRef.current.show("Restaurante creado correctamente.", 3000)
+                        setTimeout(() => {
+                            navigation.navigate("restaurants")
+                        }, 500);
+
+                    })
+                    .catch(() => {
+                        setIsLoading(false)
+                        toastRef.current.show("Error al subir el restaurante, inténtelo más tarde.")
+                    })
+
+                // toastRef.current.show("Restaurante creado correctamente", 6000)
             })
         }
     }

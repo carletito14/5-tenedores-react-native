@@ -20,6 +20,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.manuelgutierrezcampos.cincotenedores",
       "permissions": [
         "CAMERA_ROLL",
         "READ_EXTERNAL_STORAGE",
