@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useFocusEffect } from '@react-navigation/core'
 import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native'
-import {map} from "lodash"
+import { map } from "lodash"
 import { Rating, ListItem, Icon } from "react-native-elements"
 import Loading from '../../components/Loading';
 import Carousel from '../../components/Carousel';
@@ -8,6 +9,7 @@ import Map from '../../components/Map';
 import { firebaseApp } from '../../utils/firebase';
 import firebase from "firebase/app"
 import "firebase/firestore"
+import ListReviews from '../../components/ListReviews';
 
 const db = firebase.firestore(firebaseApp)
 const screenWidth = Dimensions.get("window").width
@@ -20,19 +22,21 @@ export default function Restaurant(props) {
     const [rating, setRating] = useState(0)
 
     navigation.setOptions({ title: name })
+    useFocusEffect(
+        useCallback(() => {
+            db.collection("restaurants")
+                .doc(id)// aquí filtramos por el id que nos llega por las props
+                .get()
+                .then((response) => {
+                    const data = response.data()
+                    data.id = response.id
+                    setRestaurant(data)
+                    setRating(data.rating)
+                })
 
-    useEffect(() => {
-        db.collection("restaurants")
-            .doc(id)// aquí filtramos por el id que nos llega por las props
-            .get()
-            .then((response) => {
-                const data = response.data()
-                data.id = response.id
-                setRestaurant(data)
-                setRating(data.rating)
-            })
+        }, [])
+    )
 
-    }, [])
     if (!restaurant) return <Loading isVisible={true} text="Cargando..." />
 
     return (
@@ -51,6 +55,11 @@ export default function Restaurant(props) {
                 location={restaurant.location}
                 name={restaurant.name}
                 address={restaurant.address}
+            />
+            <ListReviews
+                navigation={navigation}
+                idRestaurant={restaurant.id}
+                setRating={setRating}
             />
         </ScrollView>
     )
