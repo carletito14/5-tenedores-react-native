@@ -44,6 +44,19 @@ export default function Restaurant(props) {
 
         }, [])
     )
+    useEffect(() => {
+        if (userLogged && restaurant) {
+            db.collection("favorites")
+                .where("idRestaurant", "==", restaurant.id)
+                .where("idUser", "==", firebase.auth().currentUser.uid)
+                .get()
+                .then((response) => {
+                    if (response.docs.length === 1) {
+                        setIsFavorite(true)
+                    }
+                })
+        }
+    }, [userLogged, restaurant])
     const addFavorite = () => {
         if (!userLogged) {
             toastRef.current.show("Para usar el sistema de favoritos, debes loguearte")
@@ -63,7 +76,26 @@ export default function Restaurant(props) {
     }
 
     const removeFavorite = () => {
+        db.collection("favorites")
+            .where("idRestaurant", "==", restaurant.id)
+            .where("idUser", "==", firebase.auth().currentUser.uid)
+            .get()
+            .then((res) => {
+                res.forEach((doc) => {
+                    const idFavorite = doc.id
+                    db.collection("favorites")
+                        .doc(idFavorite)
+                        .delete()
+                        .then(() => {
+                            setIsFavorite(false)
+                            toastRef.current.show("Restaurante eliminado de favoritos.")
+                        })
+                        .catch(() => {
+                            toastRef.current.show("Error al eliminar el restaurante de favoritos.")
+                        })
 
+                });
+            })
     }
 
 
